@@ -45,7 +45,8 @@ const ProductList = () => {
                 <p className="product__description">{product.description}</p>
               </div>
               <div className="card__actions">
-              <Link
+              <Link to={`/admin/edit-product/${product._id}`} className="btn">Edit</Link>
+              {/* <Link
                 to={{
                 pathname: '/admin/editproduct',
                 search: createSearchParams({
@@ -54,7 +55,7 @@ const ProductList = () => {
                 }).toString()
                 }}
                 className="btn">Edit
-                </Link>
+                </Link> */}
                 {/* <Link to={`/admin/editproduct/${product._id}`} className="btn">Edit</Link> */}
                 <button className="btn" onClick={() => handleDelete(product._id)}>Delete</button>
               </div>

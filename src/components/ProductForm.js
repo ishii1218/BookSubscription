@@ -1,109 +1,81 @@
+// src/components/ProductForm.js
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
 import './main.css';
 import './forms.css';
 
 const ProductForm = () => {
-  const [searchParams] = useSearchParams();
+  const { productId } = useParams();
   const navigate = useNavigate();
-  const productId = searchParams.get('productId');
-  const editing = searchParams.get('Editing');
-  console.log('editing', editing);
-  console.log('productId', productId);
-  //const [editing, setEditing] = useState(!!productId);
-
-  const [formData, setFormData] = useState({
+  const [product, setProduct] = useState({
     title: '',
     imageUrl: '',
     price: '',
-    description: ''
+    description: '',
   });
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
-    if (editing) {
-      axios.get(`http://localhost:5000/admin/edit-product/${productId}`)
+    if (productId) {
+      setEditing(true);
+      axios.get(`http://localhost:5000/admin/edit-product/${productId}?edit=true`)
         .then(response => {
-          
-          setFormData(response.data);
-          //console.log('responseEditform', formData);
+          setProduct(response.data.product);
         })
-        .catch(error => console.error(error));
+        .catch(error => {
+          console.error('There was an error fetching the product!', error);
+        });
     }
-  }, [editing, productId]);
+  }, [productId]);
 
-  const handleInputChange = (event) => {
+  const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setProduct({ ...product, [name]: value });
+    //console.log(product);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log('formData', formData);
-    const url = editing ? `http://localhost:5000/admin/edit-product` : `http://localhost:5000/admin/add-product`;
-    axios.post(url, {
-        formData,
-        productId: editing ? productId : undefined // Ensure productId is only sent when editing
-      })
-      .then(response => {
-        console.log('response', response);
-        editing ? navigate('/admin/products'):navigate('/products');
-      })
-      .catch(error => console.error(error));
+    if (editing) {
+      axios.post(`http://localhost:5000/admin/edit-product`, { ...product, productId })
+        .then(() => {
+          navigate('/admin/products');
+        })
+        .catch(error => {
+          console.error('There was an error updating the product!', error);
+        });
+    } else {
+      axios.post('http://localhost:5000/admin/add-product', product)
+        .then(() => {
+          navigate('/admin/products');
+        })
+        .catch(error => {
+          console.error('There was an error adding the product!', error);
+        });
+    }
   };
 
   return (
-    <main>
-      <form className="product-form" onSubmit={handleSubmit}>
-        <div className="form-control">
-          <label htmlFor="title">Title</label>
-          <input
-            type="text"
-            name="title"
-            id="title"
-            value={formData.title}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="form-control">
-          <label htmlFor="imageUrl">Image URL</label>
-          <input
-            type="text"
-            name="imageUrl"
-            id="imageUrl"
-            value={formData.imageUrl}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="form-control">
-          <label htmlFor="price">Price</label>
-          <input
-            type="number"
-            name="price"
-            id="price"
-            step="0.01"
-            value={formData.price}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="form-control">
-          <label htmlFor="description">Description</label>
-          <textarea
-            name="description"
-            id="description"
-            rows="5"
-            value={formData.description}
-            onChange={handleInputChange}
-          ></textarea>
-        </div>
-        <button className="btn" type="submit">
-          {editing ? 'Update Product' : 'Add Product'}
-        </button>
-      </form>
-    </main>
+    <form className="product-form" onSubmit={handleSubmit}>
+      <div className="form-control">
+        <label htmlFor="title">Title</label>
+        <input type="text" name="title" id="title" value={product.title} onChange={handleChange} />
+      </div>
+      <div className="form-control">
+        <label htmlFor="imageUrl">Image URL</label>
+        <input type="text" name="imageUrl" id="imageUrl" value={product.imageUrl} onChange={handleChange} />
+      </div>
+      <div className="form-control">
+        <label htmlFor="price">Price</label>
+        <input type="number" name="price" id="price" step="0.01" value={product.price} onChange={handleChange} />
+      </div>
+      <div className="form-control">
+        <label htmlFor="description">Description</label>
+        <textarea name="description" id="description" rows="5" value={product.description} onChange={handleChange}></textarea>
+      </div>
+      <button className="btn" type="submit">{editing ? 'Update Product' : 'Add Product'}</button>
+    </form>
   );
 };
 
