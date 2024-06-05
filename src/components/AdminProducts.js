@@ -1,6 +1,6 @@
 // ProductList.js
 import React, { useEffect, useState } from 'react';
-import { Link,createSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams,useNavigate } from 'react-router-dom';
 import './main.css';
 import './cart.css';
 
@@ -10,6 +10,19 @@ const ProductDetail = () => {
   const productId = searchParams.get('productId');
   console.log('productId', productId);
   const [product, setProduct] = useState(null);
+  const navigate = useNavigate();
+
+  const addToCart = (productId) => {
+    axios.post('http://localhost:5000/cart', { productId })
+      .then(response => {
+        console.log('addedCart', response);
+        console.log('Product added to cart:', response.data);
+        navigate('/cart');
+      })
+      .catch(error => {
+        console.error('Error adding product to cart:', error);
+      });
+  };
 
   useEffect(() => {
     if (productId) {
@@ -32,10 +45,11 @@ const ProductDetail = () => {
       </div>
       <h2>${product.price}</h2>
       <p>{product.description}</p>
-      <form action="/cart" method="post">
+      <button className="btn" onClick={() => addToCart(product._id)}>Add to Cart</button>
+      {/* <form action="/cart" method="post">
         <button className="btn" type="submit">Add to Cart</button>
         <input type="hidden" name="productId" value={product._id} />
-      </form>
+      </form> */}
     </main>
   );
 };
